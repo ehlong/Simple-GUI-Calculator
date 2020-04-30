@@ -24,7 +24,7 @@ class CalcWindow(QMainWindow):
 		self.ui.minus.clicked.connect(self.buttonPressed)
 		self.ui.equals.clicked.connect(self.buttonPressed)
 		self.ui.ac.clicked.connect(self.buttonPressed)
-		self.ui.neg.clicked.connect(self.buttonPressed)
+		self.ui.neg.clicked.connect(self.buttonPressed)		# connections for all presses
 		self.plus = 0
 		self.minus = 0
 		self.equals = 0
@@ -32,7 +32,8 @@ class CalcWindow(QMainWindow):
 		self.mul = 0
 		self.hold1 = 0
 		self.hold2 = 0
-
+		self.dec = 0
+		self.action = 0										# flags for control
 
 	def buttonPressed(self):
 		clicked = self.sender()
@@ -45,49 +46,100 @@ class CalcWindow(QMainWindow):
 					clicked == self.ui.seven,
 					clicked == self.ui.eight,
 					clicked == self.ui.nine,
-					clicked == self.ui.zero]
+					clicked == self.ui.zero]				# set of all number presses
 		if any(numbers):
-			if self.ui.label.text() == "0":
+			if self.action == 0:							# if number pressed with no math
+				if self.ui.label.text() == "0":
+					self.ui.label.setText('')
+				self.ui.label.setText(self.ui.label.text() + clicked.text())
+			else:											# if number pressed with math
 				self.ui.label.setText('')
-			self.ui.label.setText(self.ui.label.text() + clicked.text())
+				self.ui.label.setText(self.ui.label.text() + clicked.text())
+				self.action = 0
 		if clicked == self.ui.plus:
 			self.plus = 1
+			self.action = 1
 			hold = self.ui.label.text()
-			self.hold1 = int(hold)
+			if '.' in hold:
+				self.dec = 1
+			if self.dec == 1:								# control for dec
+				self.hold1 = float(hold)
+				self.dec = 0
+			else:
+				self.hold1 = int(hold)
 		if clicked == self.ui.minus:
 			self.minus = 1
+			self.action = 1
 			hold = self.ui.label.text()
-			self.hold1 = int(hold)
+			if '.' in hold:
+				self.dec = 1
+			if self.dec == 1:								# control for dec
+				self.hold1 = float(hold)
+				self.dec = 0
+			else:
+				self.hold1 = int(hold)
 		if clicked == self.ui.mul:
 			self.mul = 1
+			self.action = 1
 			hold = self.ui.label.text()
-			self.hold1 = int(hold)
+			if '.' in hold:
+				self.dec = 1
+			if self.dec == 1:								# control for dec
+				self.hold1 = float(hold)
+				self.dec = 0
+			else:
+				self.hold1 = int(hold)
 		if clicked == self.ui.div:
 			self.div = 1
+			self.action = 1
 			hold = self.ui.label.text()
-			self.hold1 = int(hold)
+			if '.' in hold:
+				self.dec = 1
+			if self.dec == 1:								# control for dec
+				self.hold1 = float(hold)
+				self.dec = 0
+			else:
+				self.hold1 = int(hold)
 		if clicked == self.ui.equals:
+			self.action = 1
+			hold = self.ui.label.text()
+			if '.' in hold:
+				self.dec = 1
 			if self.plus == 1:
 				self.plus = 0
-				hold = self.ui.label.text()
-				self.hold2 = int(hold)
+				if self.dec == 1:							# control for dec
+					self.hold2 = float(hold)
+					self.dec = 0
+				else:
+					self.hold2 = int(hold)
 				self.ui.label.setText(str(self.hold1 + self.hold2))
 			if self.minus == 1:
 				self.minus = 0
-				hold = self.ui.label.text()
-				self.hold2 = int(hold)
+				if self.dec == 1:							# control for dec
+					self.hold2 = float(hold)
+					self.dec = 0
+				else:
+					self.hold2 = int(hold)
 				self.ui.label.setText(str(self.hold1 - self.hold2))
 			if self.mul == 1:
 				self.mul = 0
-				hold = self.ui.label.text()
-				self.hold2 = int(hold)
+				if self.dec == 1:							# control for dec
+					self.hold2 = float(hold)
+					self.dec = 0
+				else:
+					self.hold2 = int(hold)
 				self.ui.label.setText(str(self.hold1 * self.hold2))
 			if self.div == 1:
 				self.div = 0
-				hold = self.ui.label.text()
-				self.hold2 = int(hold)
-				self.ui.label.setText(str(self.hold1 // self.hold2) + '.' \
-										+ str(self.hold1 % self.hold2))
+				if self.dec == 1:							# control for dec
+					self.hold2 = float(hold)
+					self.dec = 0
+				else:
+					self.hold2 = int(hold)
+				if self.hold2 == 0:
+					self.ui.label.setText("Div By 0 Error")		# test for div by 0
+				else:
+					self.ui.label.setText(str(self.hold1 / self.hold2))
 		if clicked == self.ui.ac:
 			self.plus = 0
 			self.minus = 0
@@ -99,5 +151,13 @@ class CalcWindow(QMainWindow):
 			self.ui.label.setText('0')
 		if clicked == self.ui.neg:
 			hold = self.ui.label.text()
-			self.hold1 = float(hold)
+			if self.dec == 1:								# control for dec
+				self.hold1 = float(hold)
+				self.dec = 0
+			else:
+				self.hold1 = int(hold)
 			self.ui.label.setText(str(self.hold1 * -1))
+		if clicked == self.ui.dec:
+			if self.dec == 0:
+				self.dec = 1
+				self.ui.label.setText(self.ui.label.text() + clicked.text())
